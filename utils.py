@@ -7,8 +7,8 @@ def printColorMessage(message, color):
 
 def getFileList(pathList):
     ls = []
-    total_num = 0
-    failed_num = 0
+    totalNum = 0
+    nonJAVNum = 0
     fileList = []
     for path in pathList:
         for root, dirs, files in os.walk(path, followlinks=True):
@@ -19,13 +19,13 @@ def getFileList(pathList):
                     javTag = ''
                     if (len(result)) > 0:
                         printColorMessage(str(result[0]), 36)
-                        total_num += 1
+                        totalNum += 1
                         fileList.append(VideoFileDescriptor(name, full_name, True, name_parser.getJAVTag(name), os.path.getsize(full_name)))
-                        printColorMessage(str(total_num) + ':' + full_name, 32)
+                        printColorMessage(str(totalNum) + ': ' + full_name, 32)
                     else:
-                        failed_num += 1
+                        nonJAVNum += 1
                         fileList.append(VideoFileDescriptor(name, full_name, False, '', os.path.getsize(full_name)))
-                        printColorMessage(str(failed_num) + full_name, 31)
+                        printColorMessage(str(nonJAVNum) + ': ' + full_name, 31)
             '''for name in dirs:
                 print(os.path.join(root, name))'''
     for f in fileList:
@@ -34,9 +34,27 @@ def getFileList(pathList):
     return fileList
 
 def analyzeDuplicate(fileList):
+    dupFileCount = 0
+    dupFileSize = 0
     for i in range(0, len(fileList)):
-        for j in range(0, len(fileList)):
-            if i == j:
-                continue
-            if (fileList[i].isJAV and fileList[j].isJAV and fileList[i].JAVTag == fileList[j].JAVTag and fileList[i].JAVNum == fileList[j].JAVNum) or fileList[i].size == fileList[j].size:
-                fileList[i].sameSizeFileList.append(j)
+        if len(fileList[i].similarFileList) == 0:
+            for j in range(0, len(fileList)):
+                if i == j:
+                    continue
+                if (fileList[i].isJAV and fileList[j].isJAV and fileList[i].JAVTag == fileList[j].JAVTag and fileList[i].JAVNum == fileList[j].JAVNum) or fileList[i].size == fileList[j].size:
+                    fileList[i].similarFileList.append(j)
+            fileList[i].initInnocentList()
+        if len(fileList[i].similarFileList) - fileList[i].innocentNum() > 0:
+            dupFileCount += 1
+            dupFileSize += fileList[i].size
+    return dupFileCount, dupFileSize
+
+def readableSizeStr(size):
+    if size < 1024:
+        return '' + size + 'Bytes'
+    if size >= 1024 and size < 1048576:
+        return '' + str(round(size / 1024, 2)) + 'KB'
+    elif size >= 1048576 and size < 1073741824:
+        return '' + str(round(size / 1048576, 2)) + 'MB'
+    elif size > 1073741824:
+        return '' + str(round(size / 1073741824, 2)) + 'GB'

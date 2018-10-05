@@ -9,9 +9,33 @@ class VideoFileDescriptor:
         self.JAVTag = JAVTag
         self.size = size
         self.JAVNum = ''
-        self.sameSizeFileList = [] # don't know why this can't be put out side this func, will cause it turn to global member
+        self.similarFileList = [] # don't know why this can't be put out side this func, will cause it turn to global member
+        self.innocentSimilarFileList = []
 
     def reAnalyzeJAVTag(self):
         self.JAVTag = name_parser.getJAVTag(self.name)
         self.JAVNum = name_parser.getJAVSerialNumber(self.name, self.JAVTag)
+
+    def readableSizeStr(self):
+        if self.size < 1024:
+            return '' + self.size + 'Bytes'
+        if self.size >= 1024 and self.size < 1048576:
+            return '' + str(round(self.size / 1024, 2)) + 'KB'
+        elif self.size >= 1048576 and self.size < 1073741824:
+            return '' + str(round(self.size / 1048576, 2)) + 'MB'
+        elif self.size > 1073741824:
+            return '' + str(round(self.size / 1073741824, 2)) + 'GB'
+
+    def initInnocentList(self):
+        self.innocentSimilarFileList = [False] * len(self.similarFileList)
+        #if (len(self.similarFileList)) > 0:
+        #    print('_______ initInnocentList  ' + self.name + ' ' + str(len(self.innocentSimilarFileList)))
+    
+    def innocentNum(self):
+        ret = 0
+        if self.innocentSimilarFileList:
+            for i in self.innocentSimilarFileList:
+                if i == True:
+                    ret += 1
+        return ret
 

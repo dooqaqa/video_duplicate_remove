@@ -10,26 +10,18 @@ import utils
 #TODO: trash button(red)
 #TODO: rename button
 #TODO: pic process and grouping
-#TODO: dvd files process △
-#TODO: ads
+#TODO: .vob files process
+#TODO: ads identify
 #TODO: categorize to tag folder
 #TODO: highlight color
 #TODO: tag cache
-#TODO: show dup √
-#TODO: dup statistics
+#TODO: path comparasion
+#TODO: bug: sometimes ShowInExplorer doesn't work
+#TODO: analyze .vob files' path instead of their name
+#TODO: dup num is wrong
 
 class UI:
-    root = None
-    btnStart = None
-    ICON_PATH = None
-    btnSearch = None
-    btnMoveToTrash = None
-    btnOpenInExplorer = None
-    listboxFiles = None
-    txtPaths = None
-    frameSearch = None
-    frameFileOperation = None
-    frameList = None
+    
     kWidgetWidth = 800
     kWidgetHeight = 100
 
@@ -41,7 +33,7 @@ class UI:
         _, self.ICON_PATH = tempfile.mkstemp()
         with open(self.ICON_PATH, 'wb') as icon_file:
             icon_file.write(ICON)
- 
+
     def treeviewSortColumn(self, tv, col, reverse):
         l = [(tv.set(k, col), k) for k in tv.get_children('')]
         #print(tv.get_children(''))
@@ -54,7 +46,7 @@ class UI:
             tv.move(k, '', index)
             #print(k)
         tv.heading(col, command=lambda: self.treeviewSortColumn(tv, col, not reverse))
-    
+
     def forePlay(self):
         self.replaceLogo()
         self.root = Tk()
@@ -66,7 +58,7 @@ class UI:
         #self.listboxFiles = Listbox(self.frameList, width = 50, height = 100, selectmode = EXTENDED)
         #self.listboxTags = Listbox(self.frameList, width = 50, height = 100, selectmode = EXTENDED)
         #self.listboxSizes = Listbox(self.frameList, width = 50, height = 100, selectmode = EXTENDED)
-        columns = ['name', 'duplicate', 'tag', 'ID', 'size']
+        columns = ['name', 'duplicate', 'tag', 'ID', 'size (bytes)', 'readableSize']
         self.treeViewFiles = ttk.Treeview(self.frameList, height = 30, columns = columns)#show = 'headings'
         self.vbar = ttk.Scrollbar(self.frameList, orient = VERTICAL, command = self.treeViewFiles.yview)
         self.treeViewFiles.configure(yscrollcommand = self.vbar.set)
@@ -76,12 +68,14 @@ class UI:
         self.treeViewFiles.column('duplicate', width=100, anchor='w')
         self.treeViewFiles.column('tag', width=100, anchor='w')
         self.treeViewFiles.column('ID', width=100, anchor='w')
-        self.treeViewFiles.column('size', width=150, anchor='w')
+        self.treeViewFiles.column('size (bytes)', width=150, anchor='w')
+        self.treeViewFiles.column('readableSize', width=150, anchor='w')
         self.treeViewFiles.heading('name', text='name')
         self.treeViewFiles.heading('duplicate', text='duplicate')
         self.treeViewFiles.heading('tag', text='tag')
         self.treeViewFiles.heading('ID', text='ID')
-        self.treeViewFiles.heading('size', text='size') 
+        self.treeViewFiles.heading('size (bytes)', text='size (bytes)') 
+        self.treeViewFiles.heading('readableSize', text='readable size') 
         for col in columns:
             self.treeViewFiles.heading(col, text=col, command=lambda _col=col: self.treeviewSortColumn(self.treeViewFiles, _col, False))
         self.treeViewFiles.pack(side=LEFT)
@@ -90,55 +84,105 @@ class UI:
 
     def initSearchArea(self):
         self.frameSearch = Frame(self.root, height = self.kWidgetHeight, width = self.kWidgetWidth)
+        self.labelPromptPaths = Label(self.frameSearch, text = 'Input multiple paths devided by space, e.g., c:\path1 d:\path2 f:\path3')
         self.txtPaths = Text(self.frameSearch, width = 100, height = 1)
         self.btnSearch = Button(self.frameSearch, text = 'Search', width = 10, height = 1, command = self.onSearch)
-        self.txtPaths.pack(side=LEFT)
-        self.btnSearch.pack(side=RIGHT)
+        self.labelPromptPaths.grid(row = 0, column = 0)
+        self.txtPaths.grid(row = 1, column = 0, padx = 10)
+        self.btnSearch.grid(row = 1, column = 1, padx = 10)
+        #self.labelPromptPaths.pack()
+        #self.txtPaths.pack(side=LEFT)
+        #self.btnSearch.pack(side=RIGHT)
         self.frameSearch.pack()
 
     def initControlArea(self):
         self.frameFileOperation = Frame(self.root, height = self.kWidgetHeight, width = self.kWidgetWidth)
-        self.btnOpenInExplorer = Button(self.frameFileOperation, text = 'Show in explorer', width = 20, height = 1, command = self.onShowInExplorer)
-        self.btnMoveToTrash = Button(self.frameFileOperation, text = 'Move to trash', width = 20, height = 1, command = self.onMoveToTrash)
-        self.btnOpenInExplorer.pack(side=LEFT)
-        self.btnMoveToTrash.pack(side=RIGHT)
+        self.btnOpenInExplorer = Button(self.frameFileOperation, text = 'Show selections in explorer', width = 30, height = 1, command = self.onShowInExplorer)
+        self.btnOpenInExplorer.grid(row = 0, column = 0, padx = 10)
+        #self.btnMoveToTrash = Button(self.frameFileOperation, text = 'Move to trash', width = 20, height = 1, command = self.onMoveToTrash)
+        self.btnMarkAsInnocent = Button(self.frameFileOperation, text = 'Mark as Innocent', width = 30, height = 1, command = self.onMarkAsInnocent)
+        self.btnMarkAsInnocent.grid(row = 0, column = 1, padx = 10)
+        #self.btnOpenInExplorer.pack(side=LEFT)
+        #self.btnMarkAsInnocent.pack(side=LEFT)
+        #self.btnMoveToTrash.pack(side=RIGHT)
         self.frameFileOperation.pack()
+
+    def initInfoArea(self):
+        self.frameInfo = Frame(self.root, height = self.kWidgetHeight, width = self.kWidgetWidth)
+        self.labelPromptTrash = Label(self.frameInfo, text = 'There\'s no beautiful way to send files to trash, please do it manually, check below link for more info')
+        self.labelPromptTrashLink = Text(self.frameInfo, height=1, borderwidth=0)
+        self.labelPromptTrashLink.insert(1.0, 'https://www.hardcoded.net/articles/send-files-to-trash-on-all-platforms.htm')
+        self.labelPromptTrashLink.configure(state = "disabled")
+        self.labelPromptTrashLink.configure(inactiveselectbackground = self.labelPromptTrashLink.cget("selectbackground"))
+        self.labelPromptShowInExplorer = Label(self.frameInfo, text = 'Also ShowInExplorer sometimes doesn\' work, try more if so, and try closing other explorer windows if still so')
+        self.labelDupInfo = Label(self.frameInfo, text = '', fg = 'red')
+        self.labelPromptTrash.pack()
+        self.labelPromptTrashLink.pack()
+        self.labelPromptShowInExplorer.pack()
+        self.labelDupInfo.pack()
+        self.frameInfo.pack()
 
     def initWidgets(self):
         self.forePlay()
         self.initSearchArea()
         self.initControlArea()
+        self.initInfoArea()
 
         self.initListArea()
 
     def run(self):
         self.root.mainloop()
-    
+
     def onSearch(self):
-        children = self.treeViewFiles.get_children()
-        for item in children:
-            self.treeViewFiles.delete(item)
-        self.searchResult = utils.getFileList(['F:\\sn'])
-        utils.analyzeDuplicate(self.searchResult)
-        for f in self.searchResult:
-            suffix = ' dup'
-            if len(f.sameSizeFileList) > 1:
-                suffix = ' dups'
-            item = self.treeViewFiles.insert('', 'end', text=str(len(f.sameSizeFileList)) + suffix, values=[f.name, len(f.sameSizeFileList), f.JAVTag, f.JAVTag + '-' + f.JAVNum, f.size, f.fullPath])
-            if (len(f.sameSizeFileList) > 0):
-                i = 0
-                for child in f.sameSizeFileList:
-                    obj = self.searchResult[child]
-                    self.treeViewFiles.insert(item, 'end', text='dup ' + str(i), values=[obj.name, len(obj.sameSizeFileList), obj.JAVTag, obj.JAVTag + '-' + obj.JAVNum, obj.size, obj.fullPath])
-                    i += 1
-                print('___________123 ' + f.name + '__' + str(f.sameSizeFileList))
+        rawPaths = self.txtPaths.get("0.0", "end")
+        paths = rawPaths.split()
+        print(paths)
+        self.searchResult = utils.getFileList(paths)
+        self.refreshList()
 
     def onShowInExplorer(self):
         for item in self.treeViewFiles.selection():
-            subprocess.Popen(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[5])
+            #print(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[6])
+            subprocess.Popen(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[6])
 
     def onMoveToTrash(self):
-        print('onMoveToTrash')
+        for item in self.treeViewFiles.selection():
+            cmd = r'recycle ' + self.treeViewFiles.item(item,"values")[6]
+            print(cmd)
+            subprocess.Popen(cmd)
+
+    def onMarkAsInnocent(self):
+        for item in self.treeViewFiles.selection():
+            #print(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[6])
+            if len(self.treeViewFiles.item(item,"values")) > 8:
+                i = self.treeViewFiles.item(item,"values")[7]
+                j = self.treeViewFiles.item(item,"values")[8]
+                self.searchResult[int(i)].innocentSimilarFileList[int(j)] = True
+            #subprocess.Popen(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[6])
+        self.refreshList()
+        return
+
+    def refreshList(self):
+        children = self.treeViewFiles.get_children()
+        for item in children:
+            self.treeViewFiles.delete(item)
+        dupCount, dupSize = utils.analyzeDuplicate(self.searchResult)
+        self.labelDupInfo.config(text = 'potential duplicated files: ' + str(dupCount) + ', their size: ' + utils.readableSizeStr(dupSize))
+        i = 0
+        for f in self.searchResult:
+            suffix = ' dup'
+            if len(f.similarFileList) - f.innocentNum() > 1:
+                suffix = ' dups'
+            item = self.treeViewFiles.insert('', 'end', text=str(len(f.similarFileList)) + suffix, values=[f.name, len(f.similarFileList) - f.innocentNum(), f.JAVTag, f.JAVTag + ' ' + f.JAVNum, f.size, f.readableSizeStr(), f.fullPath])
+            if (len(f.similarFileList) > 0):
+                j = 0
+                for child in f.similarFileList:
+                    if f.innocentSimilarFileList[j] == False:
+                        obj = self.searchResult[child]
+                        self.treeViewFiles.insert(item, 'end', text='dup ' + str(i), values=[obj.name, '-', obj.JAVTag, obj.JAVTag + ' ' + obj.JAVNum, obj.size, obj.readableSizeStr(), obj.fullPath, i, j])
+                    j += 1
+            i += 1
+
 
 
 
