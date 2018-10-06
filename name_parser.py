@@ -2,7 +2,7 @@ import re, os
 smallFileSize = 1024 * 1024 * 10
 
 formatList = ['avi', 'rmvb', 'rm', 'mp4', 'mkv', 'wmv', 'mov', 'vob', 'wm']
-detectedJAVTags = set(['snis', 'ssni', 'ipx', 'fc2', 'yrh', 'shkd', 'ppv', 'Tokyo-Hot'])
+detectedJAVTags = set(['snis', 'ssni', 'ipx', 'fc2', 'yrh', 'shkd', 'ppv', 'Tokyo-Hot', 'juc', 'abs'])
 falseJAVTags = set(['vl', 'vip', 'japan', 'dv', 'hd'])
 nonJAVTags = set(['pornhub'])
 
@@ -34,7 +34,7 @@ def parseJAV(name):
         if t in name.lower():
             return []
     ret = []
-    candidats = findall('[A-Za-z]{2,5}[^A-Za-z0-9]{0,2}\d{3,6}(?!\d|.com)', name)
+    candidats = findall('[A-Za-z]{2,5}[^A-Za-z0-9]{0,2}\d{3,6}(?!\d|.com|.cc|.net)', name)
     for c in candidats:
         if len(c) <= 0:
             continue
