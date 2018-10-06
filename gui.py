@@ -1,24 +1,28 @@
 #!/usr/bin/python
-from tkinter import *
-from tkinter import ttk
+import sys
+if sys.version_info < (3, 0):
+    from Tkinter import *
+    import ttk
+else:
+    from tkinter import *
+    from tkinter import ttk
+
 import os
 import tempfile
 import subprocess
 import utils
 
-#TODO: tagging logic △
-#TODO: trash button(red)
+#TODO: tagging logic
 #TODO: rename button
 #TODO: pic process and grouping
-#TODO: .vob files process
 #TODO: ads identify
 #TODO: categorize to tag folder
 #TODO: highlight color
 #TODO: tag cache
 #TODO: path comparasion
 #TODO: bug: sometimes ShowInExplorer doesn't work
-#TODO: analyze .vob files' path instead of their name
-#TODO: dup num is wrong
+#TODO: time span report
+#TODO: UI and algorithm performance optimization
 
 class UI:
     
@@ -136,7 +140,7 @@ class UI:
     def onSearch(self):
         rawPaths = self.txtPaths.get("0.0", "end")
         paths = rawPaths.split()
-        print(paths)
+        #self.searchResult = utils.getFileList(['g:\\av', 'f:\\sn', 'e:\\sn'])
         self.searchResult = utils.getFileList(paths)
         self.refreshList()
 
@@ -167,21 +171,28 @@ class UI:
         for item in children:
             self.treeViewFiles.delete(item)
         dupCount, dupSize = utils.analyzeDuplicate(self.searchResult)
-        self.labelDupInfo.config(text = 'potential duplicated files: ' + str(dupCount) + ', their size: ' + utils.readableSizeStr(dupSize))
         i = 0
+        totalSize = 0
         for f in self.searchResult:
+            totalSize += f.size
             suffix = ' dup'
             if len(f.similarFileList) - f.innocentNum() > 1:
                 suffix = ' dups'
-            item = self.treeViewFiles.insert('', 'end', text=str(len(f.similarFileList)) + suffix, values=[f.name, len(f.similarFileList) - f.innocentNum(), f.JAVTag, f.JAVTag + ' ' + f.JAVNum, f.size, f.readableSizeStr(), f.fullPath])
+            item = self.treeViewFiles.insert('', 'end', text=str(len(f.similarFileList)) + suffix, values=[f.name, len(f.similarFileList) - f.innocentNum(), \
+            f.JAVTag, f.JAVTag + ' ' + f.JAVNum, f.size, f.readableSizeStr(), f.fullPath])
             if (len(f.similarFileList) > 0):
                 j = 0
+                displayDumIndex = 0
                 for child in f.similarFileList:
                     if f.innocentSimilarFileList[j] == False:
                         obj = self.searchResult[child]
-                        self.treeViewFiles.insert(item, 'end', text='dup ' + str(i), values=[obj.name, '-', obj.JAVTag, obj.JAVTag + ' ' + obj.JAVNum, obj.size, obj.readableSizeStr(), obj.fullPath, i, j])
+                        self.treeViewFiles.insert(item, 'end', text='dup ' + str(displayDumIndex), values=[obj.name, '-', obj.JAVTag, obj.JAVTag \
+                        + ' ' + obj.JAVNum, obj.size, obj.readableSizeStr(), obj.fullPath, i, j])
+                        displayDumIndex += 1
                     j += 1
             i += 1
+        self.labelDupInfo.config(text = 'potential duplicated files: ' + str(dupCount) + ', their size: ' + utils.readableSizeStr(dupSize) \
+        + ', total file count: ' + str(len(self.searchResult)) + ', total size: ' + utils.readableSizeStr(totalSize) + ', dup rate: ' + str(round(dupSize / totalSize, 3) * 100) + '%')
 
 
 

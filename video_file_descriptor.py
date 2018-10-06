@@ -13,8 +13,12 @@ class VideoFileDescriptor:
         self.innocentSimilarFileList = []
 
     def reAnalyzeJAVTag(self):
-        self.JAVTag = name_parser.getJAVTag(self.name)
-        self.JAVNum = name_parser.getJAVSerialNumber(self.name, self.JAVTag)
+        if name_parser.isVOB(self.name):
+            self.JAVTag = name_parser.getJAVTag(self.fullPath)
+            self.JAVNum = name_parser.getJAVSerialNumber(self.fullPath, self.JAVTag)
+        else:
+            self.JAVTag = name_parser.getJAVTag(self.name)
+            self.JAVNum = name_parser.getJAVSerialNumber(self.name, self.JAVTag)
 
     def readableSizeStr(self):
         if self.size < 1024:

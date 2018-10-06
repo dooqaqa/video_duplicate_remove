@@ -7,7 +7,7 @@ def printColorMessage(message, color):
 
 def getFileList(pathList):
     ls = []
-    totalNum = 0
+    JAVNum = 0
     nonJAVNum = 0
     fileList = []
     for path in pathList:
@@ -17,11 +17,15 @@ def getFileList(pathList):
                 if name_parser.isVedio(name):
                     result = name_parser.parseJAV(name)
                     javTag = ''
-                    if (len(result)) > 0:
-                        printColorMessage(str(result[0]), 36)
-                        totalNum += 1
+                    if (len(result)) > 0 and not name_parser.isVOB(name):
+                        #printColorMessage(str(result[0]), 36)
+                        JAVNum += 1
                         fileList.append(VideoFileDescriptor(name, full_name, True, name_parser.getJAVTag(name), os.path.getsize(full_name)))
-                        printColorMessage(str(totalNum) + ': ' + full_name, 32)
+                        printColorMessage(str(JAVNum) + ': ' + full_name, 32)
+                    elif name_parser.isVOB(name) and name_parser.parseJAV(root):
+                        fileList.append(VideoFileDescriptor(name, full_name, True, name_parser.getJAVTag(root), os.path.getsize(full_name)))
+                        JAVNum += 1
+                        printColorMessage(str(JAVNum) + ': ' + full_name, 32)
                     else:
                         nonJAVNum += 1
                         fileList.append(VideoFileDescriptor(name, full_name, False, '', os.path.getsize(full_name)))
@@ -36,12 +40,17 @@ def getFileList(pathList):
 def analyzeDuplicate(fileList):
     dupFileCount = 0
     dupFileSize = 0
+    #logic needs to be simplified
     for i in range(0, len(fileList)):
         if len(fileList[i].similarFileList) == 0:
             for j in range(0, len(fileList)):
                 if i == j:
                     continue
-                if (fileList[i].isJAV and fileList[j].isJAV and fileList[i].JAVTag == fileList[j].JAVTag and fileList[i].JAVNum == fileList[j].JAVNum) or fileList[i].size == fileList[j].size:
+                if name_parser.isVOB(fileList[i].name) and name_parser.isVOB(fileList[j].name) and (fileList[i].fullPath[:-5] == fileList[j].fullPath[:-5]):
+                    continue
+                if (fileList[i].isJAV and fileList[j].isJAV and fileList[i].JAVTag == fileList[j].JAVTag \
+                and fileList[i].JAVNum == fileList[j].JAVNum) \
+                or (not name_parser.isVOB(fileList[i].name) and not name_parser.isVOB(fileList[j].name) and fileList[i].size == fileList[j].size):
                     fileList[i].similarFileList.append(j)
             fileList[i].initInnocentList()
         if len(fileList[i].similarFileList) - fileList[i].innocentNum() > 0:

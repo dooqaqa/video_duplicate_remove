@@ -1,4 +1,9 @@
-import os, name_parser, gui
+import os, name_parser, gui, sys
+if os.name == 'nt':
+    if sys.version_info < (3, 0):
+        import _winreg as winreg
+    else:
+        import winreg
 def setWinConsoleKey(key, value):
     """
     Set/Remove Run Key in windows registry.
@@ -23,8 +28,6 @@ def setWinConsoleKey(key, value):
                 var_type = winreg.REG_SZ
             winreg.SetValueEx(reg_key, key, 0, var_type, value)
 
-if os.name == 'nt':
-    import winreg
 
 class TimeLogger:
     def __init__(self):

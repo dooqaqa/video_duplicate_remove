@@ -23,3 +23,5 @@ $RECYCLE.BIN/
 # =========================
 .vscode/settings.json
 *.pyc
+venv/*
+.idea/*
