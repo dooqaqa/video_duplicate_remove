@@ -2,7 +2,7 @@ import re, os
 smallFileSize = 1024 * 1024 * 10
 
 formatList = ['avi', 'rmvb', 'rm', 'mp4', 'mkv', 'wmv', 'mov', 'vob', 'wm']
-detectedJAVTags = set(['snis', 'ssni', 'ipx', 'fc2', 'yrh', 'shkd', 'ppv', 'Tokyo-Hot', 'juc', 'abs'])
+detectedJAVTags = set(['snis', 'ssni', 'ipx', 'fc2', 'yrh', 'shkd', 'ppv', 'Tokyo-Hot', 'juc', 'abs', 'svdvd', 'ekdv', 'ipz'])
 falseJAVTags = set(['vl', 'vip', 'japan', 'dv', 'hd'])
 nonJAVTags = set(['pornhub'])
 

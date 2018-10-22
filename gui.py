@@ -11,8 +11,10 @@ import os
 import tempfile
 import subprocess
 import utils
+import platform
 
 #TODO: tagging logic
+#TODO: mac show in finder
 #TODO: rename button
 #TODO: pic process and grouping
 #TODO: ads identify
@@ -145,9 +147,12 @@ class UI:
         self.refreshList()
 
     def onShowInExplorer(self):
+        systemName = platform.system()
         for item in self.treeViewFiles.selection():
-            #print(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[6])
-            subprocess.Popen(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[6])
+            if (systemName == "Windows"):
+                subprocess.Popen(r'explorer /select, ' + self.treeViewFiles.item(item,"values")[6])
+            elif (systemName == "Darwin"):
+                subprocess.Popen(r'open ' + self.treeViewFiles.item(item,"values")[6])
 
     def onMoveToTrash(self):
         for item in self.treeViewFiles.selection():
