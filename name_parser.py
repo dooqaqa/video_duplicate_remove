@@ -47,7 +47,7 @@ def parseJAV(name):
             ret.append(c)
     return ret
 
-def getJAVTag(name):
+def getJAVTag(name, force = False):
     for f in formatList:
         if '.' + f in name:
             name = name.replace('.' + f, '')
@@ -68,9 +68,10 @@ def getJAVTag(name):
         for tag in m:
             if tag.lower() in detectedJAVTags:
                 return tag
-    for tag in m:
-        if tag.lower() not in falseJAVTags:
-            return tag
+    if force:
+        for tag in m:
+            if tag.lower() not in falseJAVTags:
+                return tag
     return ''
 
 def getJAVSerialNumber(name, tag):

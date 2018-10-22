@@ -32,9 +32,12 @@ def getFileList(pathList):
                         printColorMessage(str(nonJAVNum) + ': ' + full_name, 31)
             '''for name in dirs:
                 print(os.path.join(root, name))'''
-    for f in fileList:
-        if f.isJAV:
-            f.reAnalyzeJAVTag()
+    for i in range(0, 8):
+        successCount = 0
+        for f in fileList:
+            if f.isJAV:
+                if f.reAnalyzeJAVTag(i < 7):
+                    successCount += 1
     return fileList
 
 def analyzeDuplicate(fileList):

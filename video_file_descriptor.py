@@ -12,13 +12,15 @@ class VideoFileDescriptor:
         self.similarFileList = [] # don't know why this can't be put out side this func, will cause it turn to global member
         self.innocentSimilarFileList = []
 
-    def reAnalyzeJAVTag(self):
+    def reAnalyzeJAVTag(self, force = False):
+        oldTag = self.JAVTag
         if name_parser.isVOB(self.name):
-            self.JAVTag = name_parser.getJAVTag(self.fullPath)
+            self.JAVTag = name_parser.getJAVTag(self.fullPath, force)
             self.JAVNum = name_parser.getJAVSerialNumber(self.fullPath, self.JAVTag)
         else:
-            self.JAVTag = name_parser.getJAVTag(self.name)
+            self.JAVTag = name_parser.getJAVTag(self.name, force)
             self.JAVNum = name_parser.getJAVSerialNumber(self.name, self.JAVTag)
+        return self.JAVTag != oldTag
 
     def readableSizeStr(self):
         if self.size < 1024:
