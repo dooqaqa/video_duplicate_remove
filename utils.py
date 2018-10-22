@@ -38,6 +38,7 @@ def getFileList(pathList):
             if f.isJAV:
                 if f.reAnalyzeJAVTag(i < 7):
                     successCount += 1
+        print('analyzing JAV tag, round ' + str(i) + ': ' + str(successCount) + ' results adjusted')
     return fileList
 
 def analyzeDuplicate(fileList):
