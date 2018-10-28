@@ -14,10 +14,8 @@ import utils
 import platform
 
 #TODO: tagging logic
-#TODO: mac show in finder
 #TODO: rename button
 #TODO: pic process and grouping
-#TODO: ads identify
 #TODO: categorize to tag folder
 #TODO: highlight color
 #TODO: tag cache
@@ -25,6 +23,8 @@ import platform
 #TODO: bug: sometimes ShowInExplorer doesn't work
 #TODO: time span report
 #TODO: UI and algorithm performance optimization
+#TODO: ads identify
+#TODO: rectangle diagram
 
 class UI:
     
@@ -198,9 +198,6 @@ class UI:
             i += 1
         self.labelDupInfo.config(text = 'potential duplicated files: ' + str(dupCount) + ', their size: ' + utils.readableSizeStr(dupSize) \
         + ', total file count: ' + str(len(self.searchResult)) + ', total size: ' + utils.readableSizeStr(totalSize) + ', dup rate: ' + str(round(dupSize / totalSize, 3) * 100) + '%')
-
-
-
 
 if __name__ == '__main__':
     ui = UI()

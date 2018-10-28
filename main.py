@@ -1,4 +1,4 @@
-import os, name_parser, gui, sys
+import os, gui, sys
 if os.name == 'nt':
     if sys.version_info < (3, 0):
         import _winreg as winreg

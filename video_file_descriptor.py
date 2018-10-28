@@ -2,17 +2,16 @@
 import name_parser
 
 class VideoFileDescriptor:
-    def __init__(self, name, fullPath, isJAV, JAVTag, size):
+    def __init__(self, name, fullPath, JAVTag, size):
         self.name = name
         self.fullPath = fullPath
-        self.isJAV = isJAV
         self.JAVTag = JAVTag
         self.size = size
         self.JAVNum = ''
         self.similarFileList = [] # don't know why this can't be put out side this func, will cause it turn to global member
         self.innocentSimilarFileList = []
 
-    def reAnalyzeJAVTag(self, force = False):
+    def analyzeJAVTag(self, force = False):
         oldTag = self.JAVTag
         if name_parser.isVOB(self.name):
             self.JAVTag = name_parser.getJAVTag(self.fullPath, force)
